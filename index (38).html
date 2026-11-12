@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>선적 지연 대응 노트 · 연락 타임라인</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root{
+    --navy:#1B3A6B; --ink:#0E1A2B; --orange:#C2410C; --orange-bg:#FDEDE4; --orange-text:#9A3409; --green:#2D6A4F; --green-bg:#E3F0E9; --navy-bg:#E8EDF5; --white:#FFFFFF; --gray-light:#D5DCE5; --gray-dark:#4A5A70;
+    --font-sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    --font-head:"Hahmlet","Apple SD Gothic Neo",serif;
+    --space-1:4px; --space-2:8px; --space-3:16px; --space-4:24px; --space-5:40px;
+    --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-sans);color:var(--ink);background:var(--white);font-size:16px;line-height:28px}
+  header{background:var(--navy);color:var(--white);padding:var(--space-3) var(--space-4)}
+  header .brand{display:flex;align-items:center;gap:var(--space-2);font-weight:800;font-size:14px;line-height:24px;letter-spacing:.02em}
+  header .sun{width:14px;height:14px;border-radius:50%;background:var(--white);display:inline-block}
+  header h1{margin:var(--space-1) 0 0;font-family:var(--font-head);font-size:26px;line-height:36px;font-weight:800;letter-spacing:-0.02em}
+  header p{margin:0;font-size:14px;line-height:24px;opacity:.9}
+  main{display:grid;grid-template-columns:280px 1fr;gap:var(--space-4);padding:var(--space-4);max-width:1100px;margin:0 auto}
+  @media (max-width:760px){main{grid-template-columns:1fr;padding:var(--space-3)}}
+  h2{font-family:var(--font-head);font-size:20px;line-height:30px;font-weight:800;letter-spacing:-0.02em;margin:0 0 var(--space-2)}
+  h3{font-family:var(--font-head);font-size:17px;line-height:28px;font-weight:700;margin:0 0 var(--space-2)}
+  .card{border:1px solid var(--gray-light);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-3);background:var(--white)}
+  .muted{color:var(--gray-dark);font-size:14px;line-height:24px}
+  .caption{color:var(--gray-dark);font-size:12px;line-height:18px;font-weight:500}
+  .hb-btn{font-family:var(--font-sans);font-size:16px;font-weight:700;line-height:24px;padding:var(--space-2) var(--space-3);min-height:44px;border-radius:var(--radius-md);border:2px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1)}
+  .hb-btn--primary{background:var(--navy);color:var(--white)}
+  .hb-btn--accent{background:var(--orange);color:var(--navy)}
+  .hb-btn--outline{background:var(--white);color:var(--navy);border-color:var(--navy)}
+  .hb-btn:focus-visible,.case-item:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+  .hb-btn:disabled{background:var(--gray-light);color:var(--gray-dark);border-color:transparent;cursor:not-allowed}
+  .btn-small{min-height:36px;font-size:14px;padding:var(--space-1) var(--space-2)}
+  .full{width:100%}
+  label{display:block;font-size:14px;line-height:24px;font-weight:700;margin-bottom:var(--space-1)}
+  .opt{font-weight:400;color:var(--gray-dark)}
+  input,select,textarea{width:100%;font-family:var(--font-sans);font-size:16px;line-height:24px;color:var(--navy);border:1px solid var(--gray-dark);border-radius:var(--radius-md);padding:var(--space-2) var(--space-2);background:var(--white);min-height:44px}
+  textarea{min-height:72px;resize:vertical}
+  .field{margin-bottom:var(--space-3)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+  @media (max-width:480px){.row{grid-template-columns:1fr}}
+  .case-list{list-style:none;margin:0;padding:0}
+  .case-item{width:100%;text-align:left;background:var(--white);border:1px solid var(--gray-light);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-2);cursor:pointer;font-family:var(--font-sans);color:var(--navy)}
+  .case-item[aria-current="true"]{border:2px solid var(--navy);background:#F5F7FA}
+  .case-item strong{display:block;font-size:16px;line-height:24px}
+  .badge{display:inline-block;font-size:12px;line-height:18px;font-weight:700;padding:2px var(--space-2);border-radius:var(--radius-sm);background:var(--navy-bg);color:var(--navy);white-space:nowrap}
+  .badge.wait{background:var(--orange-bg);color:var(--orange-text);box-shadow:inset 0 0 0 1px var(--orange)}
+  .badge.done{background:var(--green-bg);color:var(--green)}
+  .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-2) var(--space-3);margin:var(--space-2) 0 0}
+  .info div{font-size:14px;line-height:24px}
+  .info dt{color:var(--gray-dark);font-size:12px;line-height:18px;font-weight:500}
+  .info dd{margin:0;font-weight:700}
+  dl{margin:0}
+  .hb-table-wrap{border:1px solid var(--gray-light);border-radius:var(--radius-lg);overflow:auto}
+  .hb-table{width:100%;border-collapse:collapse;font-size:14px;line-height:24px}
+  .hb-table th{background:var(--gray-light);font-weight:700;text-align:left;padding:var(--space-2) var(--space-3);white-space:nowrap}
+  .hb-table td{padding:var(--space-2) var(--space-3);border-top:1px solid var(--gray-light);vertical-align:top}
+  .hb-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .timeline{list-style:none;margin:0;padding:0}
+  .tl{display:grid;grid-template-columns:110px 1fr auto;gap:var(--space-3);padding:var(--space-3) 0;border-top:1px solid var(--gray-light)}
+  .tl:first-child{border-top:0}
+  .tl .date{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+  .tl .who{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;font-weight:700}
+  .tl .note{margin:var(--space-1) 0 0;white-space:pre-wrap;word-break:break-word}
+  @media (max-width:480px){.tl{grid-template-columns:1fr}}
+  .linkbtn{background:none;border:0;color:var(--gray-dark);font-family:var(--font-sans);font-size:12px;text-decoration:underline;cursor:pointer;padding:var(--space-1)}
+  .empty{color:var(--gray-dark);font-size:14px;line-height:24px;padding:var(--space-3) 0}
+  .notice{font-size:14px;line-height:24px;background:#F5F7FA;border:1px solid var(--gray-light);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-3)}
+  .summary-out{white-space:pre-wrap;background:#F5F7FA;border:1px solid var(--gray-light);border-radius:var(--radius-md);padding:var(--space-3);margin-top:var(--space-3);font-size:14px;line-height:24px}
+  .actions{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+  .err{color:#A12A2A;font-size:14px;line-height:24px;margin-top:var(--space-1)}
+  .remind{border-color:var(--orange);background:var(--orange-bg)}
+  .remind h2{color:var(--orange-text)}
+  .remind-list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .remind-item{width:100%;text-align:left;background:var(--white);border:1px solid var(--orange);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3);cursor:pointer;font-family:var(--font-sans);color:var(--ink);font-size:14px;line-height:22px}
+  .remind-item b{color:var(--orange-text)}
+  .remind select{width:auto;min-height:36px;padding:2px 8px;font-size:14px}
+  .late{color:var(--orange-text);font-weight:700}
+  .paste{background:#F5F7FA;border:1px dashed var(--gray-dark);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-3)}
+  .paste textarea{min-height:88px;background:var(--white)}
+  .tag-late{display:inline-block;margin-left:6px;font-size:12px;line-height:18px;font-weight:700;padding:0 6px;border-radius:var(--radius-sm);background:var(--orange-bg);color:var(--orange-text)}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="sun" aria-hidden="true"></span>선적 지연 대응 노트</div>
+  <h1>연락 타임라인</h1>
+  <p>지연 건마다 공장·포워딩사·바이어와 연락한 내용을 한 화면에 시간순으로 모읍니다.</p>
+</header>
+
+<main>
+  <aside>
+    <div id="storeNote" class="notice">저장 공간을 연결하는 중입니다…</div>
+    <button id="btnNewCase" class="hb-btn hb-btn--primary full" type="button">+ 새 지연 건 등록</button>
+
+    <form id="formCase" class="card hidden" style="margin-top:16px" novalidate>
+      <h3>새 지연 건</h3>
+      <div class="field"><label for="cName">지연 건 이름</label><input id="cName" placeholder="예: 지연 건 01" autocomplete="off"></div>
+      <div class="field"><label for="cBuyer">바이어 <span class="opt">(선택)</span></label><input id="cBuyer" placeholder="예: 고객 01" autocomplete="off"></div>
+      <div class="field"><label for="cOwner">담당자 <span class="opt">(선택)</span></label><input id="cOwner" placeholder="예: 담당자 01" autocomplete="off"></div>
+      <div class="field"><label for="cOrig">원래 선적일 <span class="opt">(선택)</span></label><input id="cOrig" type="date"></div>
+      <div class="field"><label for="cNew">새 예상 선적일 <span class="opt">(선택)</span></label><input id="cNew" type="date"></div>
+      <div id="cErr" class="err hidden"></div>
+      <div class="actions">
+        <button class="hb-btn hb-btn--primary" type="submit">등록</button>
+        <button class="hb-btn hb-btn--outline" type="button" id="btnCancelCase">취소</button>
+      </div>
+    </form>
+
+    <div id="remindCard" class="card remind" style="margin-top:24px">
+      <div class="actions" style="justify-content:space-between">
+        <h2 style="margin:0">다시 연락할 때</h2>
+        <label for="remindDays" class="caption" style="display:flex;align-items:center;gap:6px;margin:0">답 기다림 <select id="remindDays"><option value="1">1일</option><option value="2" selected>2일</option><option value="3">3일</option><option value="5">5일</option></select> 이상</label>
+      </div>
+      <ul id="remindList" class="remind-list"></ul>
+      <p id="remindEmpty" class="caption" style="margin:8px 0 0">기준보다 오래 답을 기다리는 상대가 없습니다.</p>
+    </div>
+
+    <h2 style="margin-top:24px">진행 중인 지연 건</h2>
+    <ul id="caseList" class="case-list"></ul>
+    <p id="caseEmpty" class="empty">아직 등록한 지연 건이 없습니다. 위의 “+ 새 지연 건 등록”으로 시작하세요.</p>
+  </aside>
+
+  <section id="detail">
+    <div id="noSelect" class="card"><p class="muted" style="margin:0">왼쪽에서 지연 건을 등록하거나 고르면 여기에 연락 타임라인이 보입니다.</p></div>
+
+    <div id="caseView" class="hidden">
+      <div class="card">
+        <div class="actions" style="justify-content:space-between">
+          <h2 id="vName" style="margin:0"></h2>
+          <button id="btnDelCase" class="linkbtn" type="button">이 지연 건 삭제</button>
+        </div>
+        <dl class="info">
+          <div><dt>바이어</dt><dd id="vBuyer"></dd></div>
+          <div><dt>담당자</dt><dd id="vOwner"></dd></div>
+          <div><dt>원래 선적일</dt><dd id="vOrig"></dd></div>
+          <div><dt>새 예상 선적일</dt><dd id="vNew"></dd></div>
+          <div><dt>지연 일수</dt><dd id="vDelay"></dd></div>
+        </dl>
+        <p class="caption" style="margin:8px 0 0">빈칸(—)은 입력하지 않은 값입니다. 지연 일수는 두 날짜를 모두 넣었을 때만 계산합니다.</p>
+      </div>
+
+      <div class="card">
+        <h3>상대별 마지막 연락 — 지금 어디까지 왔나</h3>
+        <div id="lastWrap" class="hb-table-wrap">
+          <table class="hb-table">
+            <thead><tr><th>상대</th><th>마지막 연락일</th><th>단계</th><th class="num">지난 일수</th><th>내용</th></tr></thead>
+            <tbody id="lastBody"></tbody>
+          </table>
+        </div>
+        <p id="lastEmpty" class="empty hidden">연락 기록이 생기면 상대별로 정리됩니다.</p>
+      </div>
+
+      <form id="formEntry" class="card" novalidate>
+        <h3>연락 기록 추가</h3>
+        <div class="paste">
+          <label for="ePaste">메일·메신저 내용 붙여 넣기 <span class="opt">(선택 — 아래 칸을 자동으로 채웁니다)</span></label>
+          <textarea id="ePaste" placeholder="받은 메일이나 카톡 내용을 그대로 붙여 넣으세요"></textarea>
+          <div class="actions" style="margin-top:8px"><button id="btnParse" class="hb-btn hb-btn--outline btn-small" type="button">자동으로 채우기</button><span id="parseStatus" class="caption" aria-live="polite"></span></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="eDate">연락한 날짜</label><input id="eDate" type="date"></div>
+          <div class="field"><label for="eParty">연락 상대</label>
+            <select id="eParty"><option value="공장">공장</option><option value="포워딩사">포워딩사</option><option value="바이어">바이어</option><option value="기타">기타</option></select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="eName">상대 이름 <span class="opt">(선택)</span></label><input id="eName" placeholder="예: 공장 A" autocomplete="off"></div>
+          <div class="field"><label for="eStage">단계</label>
+            <select id="eStage"><option value="연락함">연락함</option><option value="답 기다림">답 기다림</option><option value="해결됨">해결됨</option></select></div>
+        </div>
+        <div class="field"><label for="eNote">무엇을 연락했나요</label><textarea id="eNote" placeholder="예: 선박 스케줄 확인 요청"></textarea></div>
+        <div id="eErr" class="err hidden"></div>
+        <button class="hb-btn hb-btn--primary" type="submit">기록 추가</button>
+      </form>
+
+      <div class="card">
+        <h3>연락 타임라인 <span class="caption">(오래된 기록 → 최근 기록)</span></h3>
+        <ol id="timeline" class="timeline"></ol>
+        <p id="tlEmpty" class="empty">아직 연락 기록이 없습니다.</p>
+      </div>
+
+      <div class="card" id="claudeCard">
+        <h3>Claude에게 지금 상황 요약 받기</h3>
+        <p class="muted" style="margin:0 0 16px">위 연락 기록만 보고 지금 상황을 정리합니다. 기록에 없는 내용은 “기록 없음”으로 표시하도록 요청합니다.</p>
+        <div class="actions">
+          <button id="btnSummary" class="hb-btn hb-btn--primary" type="button">요약 받기</button>
+          <button id="btnCopy" class="hb-btn hb-btn--outline hidden" type="button">요약 복사</button>
+          <span id="sumStatus" class="caption"></span>
+        </div>
+        <div id="sumOut" class="summary-out hidden" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const DASH = "—";
+  let cases = {};           // id -> case object
+  let selectedId = null;
+  let db = null, colRef = null, persistent = false;
+  let sample = null;
+
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function dayNum(s){ if(!s) return null; const [y,m,d]=s.split("-").map(Number); if(!y||!m||!d) return null; return Math.round(Date.UTC(y,m-1,d)/86400000); }
+  function diffDays(a,b){ const x=dayNum(a), y=dayNum(b); return (x===null||y===null)?null:(y-x); }
+  function v(s){ return (s && String(s).trim()) ? String(s).trim() : ""; }
+  function show(el,on){ el.classList.toggle("hidden",!on); }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
+  function stageBadge(stage){ const b=el("span","badge"+(stage==="답 기다림"?" wait":stage==="해결됨"?" done":""),stage||DASH); return b; }
+  function partyLabel(en){ return en.partyName ? en.party+" · "+en.partyName : en.party; }
+  function sortedEntries(c){
+    return (c.entries||[]).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
+  }
+
+  // ---------- storage ----------
+  async function saveCase(c){
+    cases[c.id]=c; render();
+    if(localMode){ saveLocal(); return; }
+    if(!persistent) return;
+    try{ await colRef.doc(c.id).set(JSON.parse(JSON.stringify(c))); }
+    catch(e){ storeMsg("저장하지 못했습니다 ("+(e&&e.code||"오류")+"). 이 기록은 화면을 닫으면 사라질 수 있습니다."); }
+  }
+  async function removeCase(id){
+    delete cases[id]; if(selectedId===id) selectedId=null; render();
+    if(localMode){ saveLocal(); return; }
+    if(!persistent) return;
+    try{ await colRef.doc(id).delete(); }catch(e){ storeMsg("삭제를 저장하지 못했습니다."); }
+  }
+  // ---------- browser storage (standalone deploy) ----------
+  let localMode=false;
+  const LS_KEY="shipping-delay-note:cases";
+  function saveLocal(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(cases)); }
+    catch(e){ storeMsg("이 브라우저에 저장하지 못했습니다. 기록은 화면을 닫으면 사라질 수 있습니다."); }
+  }
+  function startLocal(){
+    localMode=true;
+    try{ const raw=localStorage.getItem(LS_KEY); if(raw){ const o=JSON.parse(raw); if(o && typeof o==="object") cases=o; } }catch(e){}
+    storeMsg("기록은 지금 쓰는 이 브라우저에만 저장됩니다. 다른 기기나 다른 사람과는 공유되지 않습니다.");
+    show($("claudeCard"), false);
+    render();
+  }
+  function storeMsg(t){ $("storeNote").textContent=t; show($("storeNote"),true); }
+
+  async function initStore(){
+    let timer = setTimeout(()=>storeMsg("저장 공간에 아직 연결되지 않았습니다. 입력은 되지만, 연결 전 기록은 닫으면 사라질 수 있습니다."),10000);
+    try{
+      const [dbNs, userNs] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      const id = userNs ? await userNs.id() : null;
+      if(!dbNs || !id){ clearTimeout(timer); storeMsg("이 화면에서는 저장 기능을 쓸 수 없습니다. 입력한 기록은 닫으면 사라집니다."); return; }
+      db = dbNs; colRef = db.collection("data/users/"+id);
+      colRef.onSnapshot(snap=>{
+        clearTimeout(timer);
+        persistent = true;
+        const next = {};
+        snap.docs.forEach(d=>{ if(d.exists){ const o=JSON.parse(JSON.stringify(d.data())); o.id=d.id; next[d.id]=o; } });
+        // keep local-only cases made before connection
+        Object.keys(cases).forEach(k=>{ if(!next[k] && cases[k]._local){ next[k]=cases[k]; } });
+        cases = next;
+        if(!snap.metadata.fromCache) show($("storeNote"),false);
+        render();
+      }, err=>{
+        clearTimeout(timer);
+        storeMsg("저장 공간 연결이 끊겼습니다 ("+(err&&err.code||"오류")+"). 새 기록은 닫으면 사라질 수 있습니다.");
+        persistent=false;
+      });
+    }catch(e){ clearTimeout(timer); storeMsg("이 화면에서는 저장 기능을 쓸 수 없습니다. 입력한 기록은 닫으면 사라집니다."); }
+  }
+
+  async function initSample(){
+    try{ sample = await window.claude.use("sample"); }catch(e){ sample=null; }
+    if(!sample){ $("btnSummary").disabled=true; $("sumStatus").textContent="이 화면에서는 Claude 요약을 쓸 수 없습니다."; }
+  }
+
+  // ---------- reminders ----------
+  let remindDays = 2;
+  try{ const s=localStorage.getItem("remindDays"); if(s && ["1","2","3","5"].includes(s)) remindDays=Number(s); }catch(e){}
+  function overdueFor(c){
+    const today=todayStr();
+    return lastByParty(c).filter(en=>{ if(en.stage!=="답 기다림") return false; const d=diffDays(en.date,today); return d!==null && d>=remindDays; })
+      .map(en=>({ caseId:c.id, caseName:c.name, owner:c.owner||"", who:partyLabel(en), days:diffDays(en.date,today), note:en.note||"" }));
+  }
+  function renderRemind(){
+    const list=$("remindList"); list.textContent="";
+    let all=[]; Object.keys(cases).forEach(id=>{ all=all.concat(overdueFor(cases[id])); });
+    all.sort((a,b)=>b.days-a.days);
+    show($("remindEmpty"), all.length===0);
+    $("remindCard").classList.toggle("remind", all.length>0);
+    all.forEach(x=>{
+      const li=el("li");
+      const b=el("button","remind-item"); b.type="button";
+      const t=el("b",null,x.who+" · "+x.days+"일째 답 기다림"); b.appendChild(t);
+      b.appendChild(el("div","caption",x.caseName+(x.owner?" · 담당 "+x.owner:"")+(x.note?" · "+x.note:"")));
+      b.addEventListener("click",()=>{ selectedId=x.caseId; resetSummary(); render(); });
+      li.appendChild(b); list.appendChild(li);
+    });
+  }
+  $("remindDays").value=String(remindDays);
+  $("remindDays").addEventListener("change",e=>{ remindDays=Number(e.target.value)||2; try{ localStorage.setItem("remindDays",String(remindDays)); }catch(err){} render(); });
+
+  // ---------- render ----------
+  function render(){
+    const list=$("caseList"); list.textContent="";
+    const ids=Object.keys(cases).sort((a,b)=>(cases[b].createdAt||0)-(cases[a].createdAt||0));
+    show($("caseEmpty"), ids.length===0);
+    if(selectedId && !cases[selectedId]) selectedId=null;
+    ids.forEach(id=>{
+      const c=cases[id];
+      const li=el("li");
+      const b=el("button","case-item"); b.type="button";
+      b.setAttribute("aria-current", id===selectedId?"true":"false");
+      b.appendChild(el("strong",null,c.name));
+      const ents=c.entries||[];
+      const waiting=lastByParty(c).filter(x=>x.stage==="답 기다림").length;
+      b.appendChild(el("span","caption",(c.owner?c.owner+" · ":"")+(c.buyer?c.buyer+" · ":"")+"연락 "+ents.length+"건"+(waiting?" · 답 기다림 "+waiting:"")));
+      const lateN=overdueFor(c).length;
+      if(lateN) b.appendChild(el("span","tag-late","다시 연락 "+lateN));
+      b.addEventListener("click",()=>{ selectedId=id; resetSummary(); render(); });
+      li.appendChild(b); list.appendChild(li);
+    });
+    renderDetail();
+    renderRemind();
+  }
+
+  function lastByParty(c){
+    const map=new Map();
+    sortedEntries(c).forEach(en=>{ map.set(partyLabel(en), en); });
+    return Array.from(map.values());
+  }
+
+  function renderDetail(){
+    const c = selectedId ? cases[selectedId] : null;
+    show($("noSelect"), !c); show($("caseView"), !!c);
+    if(!c) return;
+    $("vName").textContent=c.name;
+    $("vBuyer").textContent=c.buyer||DASH;
+    $("vOwner").textContent=c.owner||DASH;
+    $("vOrig").textContent=c.origDate||DASH;
+    $("vNew").textContent=c.newDate||DASH;
+    const dd=diffDays(c.origDate,c.newDate);
+    $("vDelay").textContent = dd===null ? DASH : dd+"일";
+
+    // last per party
+    const tb=$("lastBody"); tb.textContent="";
+    const lasts=lastByParty(c);
+    show($("lastWrap"), lasts.length>0); show($("lastEmpty"), lasts.length===0);
+    const today=todayStr();
+    lasts.forEach(en=>{
+      const tr=el("tr");
+      tr.appendChild(el("td",null,partyLabel(en)));
+      tr.appendChild(el("td",null,en.date||DASH));
+      const td=el("td"); td.appendChild(stageBadge(en.stage)); tr.appendChild(td);
+      const days = en.stage==="해결됨" ? null : diffDays(en.date,today);
+      const isLate = en.stage==="답 기다림" && days!==null && days>=remindDays;
+      tr.appendChild(el("td","num"+(isLate?" late":""), days===null ? DASH : days+"일"+(isLate?" · 다시 연락":"")));
+      tr.appendChild(el("td",null,en.note||DASH));
+      tb.appendChild(tr);
+    });
+
+    // timeline
+    const ol=$("timeline"); ol.textContent="";
+    const ents=sortedEntries(c);
+    show($("tlEmpty"), ents.length===0);
+    ents.forEach(en=>{
+      const li=el("li","tl");
+      li.appendChild(el("div","date",en.date||DASH));
+      const body=el("div");
+      const who=el("div","who"); who.appendChild(el("span",null,partyLabel(en))); who.appendChild(stageBadge(en.stage));
+      body.appendChild(who);
+      body.appendChild(el("p","note",en.note||DASH));
+      li.appendChild(body);
+      const del=el("button","linkbtn","삭제"); del.type="button";
+      del.setAttribute("aria-label",(en.date||"")+" "+partyLabel(en)+" 기록 삭제");
+      del.addEventListener("click",()=>{
+        const cc=JSON.parse(JSON.stringify(cases[c.id]));
+        cc.entries=(cc.entries||[]).filter(x=>x.id!==en.id);
+        saveCase(cc);
+      });
+      li.appendChild(del);
+      ol.appendChild(li);
+    });
+  }
+
+  // ---------- events ----------
+  $("btnNewCase").addEventListener("click",()=>{ show($("formCase"),true); $("cName").focus(); });
+  $("btnCancelCase").addEventListener("click",()=>{ $("formCase").reset(); show($("cErr"),false); show($("formCase"),false); });
+  $("formCase").addEventListener("submit",e=>{
+    e.preventDefault();
+    const name=v($("cName").value);
+    if(!name){ $("cErr").textContent="지연 건 이름을 적어 주세요."; show($("cErr"),true); return; }
+    const c={ id:uid(), name, buyer:v($("cBuyer").value), owner:v($("cOwner").value), origDate:$("cOrig").value||"", newDate:$("cNew").value||"", createdAt:Date.now(), entries:[] };
+    if(!persistent) c._local=true;
+    $("formCase").reset(); show($("cErr"),false); show($("formCase"),false);
+    selectedId=c.id; resetSummary();
+    saveCase(c);
+  });
+  $("formEntry").addEventListener("submit",e=>{
+    e.preventDefault();
+    if(!selectedId||!cases[selectedId]) return;
+    const note=v($("eNote").value);
+    const date=$("eDate").value;
+    if(!date){ $("eErr").textContent="연락한 날짜를 골라 주세요."; show($("eErr"),true); return; }
+    if(!note){ $("eErr").textContent="무엇을 연락했는지 적어 주세요."; show($("eErr"),true); return; }
+    show($("eErr"),false);
+    const cc=JSON.parse(JSON.stringify(cases[selectedId]));
+    cc.entries=(cc.entries||[]).concat([{ id:uid(), date, party:$("eParty").value, partyName:v($("eName").value), stage:$("eStage").value, note, createdAt:Date.now() }]);
+    $("eNote").value=""; $("eName").value="";
+    saveCase(cc);
+  });
+  $("btnDelCase").addEventListener("click",()=>{
+    const b=$("btnDelCase");
+    if(b.dataset.confirm!=="1"){ b.dataset.confirm="1"; b.textContent="한 번 더 누르면 삭제됩니다"; setTimeout(()=>{ b.dataset.confirm=""; b.textContent="이 지연 건 삭제"; },4000); return; }
+    b.dataset.confirm=""; b.textContent="이 지연 건 삭제";
+    removeCase(selectedId);
+  });
+
+  // ---------- paste to fill ----------
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function ruleParse(t){
+    const s=t.toLowerCase();
+    let party="기타";
+    if(/포워딩|포워더|forward|선사|vessel|booking|부킹|\betd\b|\beta\b|b\/l|운송|선적 스케줄/.test(s)) party="포워딩사";
+    else if(/공장|factory|생산|production|봉제|원단|부자재|inspection|검품/.test(s)) party="공장";
+    else if(/바이어|buyer|customer|고객|발주|purchase order/.test(s)) party="바이어";
+    let stage="연락함";
+    if(/완료|해결|확정|confirmed|resolved|shipped|출항했/.test(s)) stage="해결됨";
+    else if(/\?|부탁|회신|답변|please (confirm|advise|let)|let me know|kindly|확인해 ?주|알려 ?주/.test(s)) stage="답 기다림";
+    let date=""; const m=t.match(/(20\d{2})[-./](\d{1,2})[-./](\d{1,2})/); if(m) date=m[1]+"-"+pad2(m[2])+"-"+pad2(m[3]);
+    const lines=t.split(/\n/).map(x=>x.trim()).filter(x=>x && !/^(from|to|cc|date|sent|보낸 ?사람|받는 ?사람)\s*:/i.test(x));
+    const subj=lines.find(x=>/^(subject|제목)\s*:/i.test(x));
+    const note=((subj||lines[0]||"").replace(/^(subject|제목)\s*:\s*/i,"")).slice(0,80);
+    return { date, party, partyName:"", stage, note };
+  }
+  function fillEntry(r, how){
+    if(r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) $("eDate").value=r.date;
+    if(["공장","포워딩사","바이어","기타"].includes(r.party)) $("eParty").value=r.party;
+    if(r.partyName) $("eName").value=r.partyName;
+    if(["연락함","답 기다림","해결됨"].includes(r.stage)) $("eStage").value=r.stage;
+    if(r.note) $("eNote").value=r.note;
+    $("parseStatus").textContent=how+" 칸을 채웠습니다. 저장 전에 상대·단계·날짜가 맞는지 확인해 주세요.";
+  }
+  $("btnParse").addEventListener("click",async()=>{
+    const t=$("ePaste").value.trim();
+    if(!t){ $("parseStatus").textContent="내용을 먼저 붙여 넣어 주세요."; return; }
+    const btn=$("btnParse");
+    if(sample){
+      btn.disabled=true; $("parseStatus").textContent="Claude가 읽는 중입니다…";
+      const prompt=`아래는 B2B 수출 회사 해외영업 담당자가 주고받은 메일 또는 메신저 내용입니다. 선적 지연 연락 기록 한 줄로 정리하세요.
+
+[내용]
+${t.slice(0,4000)}
+
+[규칙]
+- JSON 한 개만 출력하세요. 다른 말은 쓰지 마세요.
+- 내용에 없는 날짜·이름은 지어내지 말고 빈 문자열로 두세요.
+- party는 공장, 포워딩사, 바이어, 기타 중 하나.
+- stage는 상대의 회신을 기다리는 상황이면 "답 기다림", 문제가 정리됐으면 "해결됨", 그 외에는 "연락함".
+- note는 무엇을 연락했는지 한국어 한 문장, 60자 이내.
+
+[형식]
+{"date":"YYYY-MM-DD 또는 빈 문자열","party":"","partyName":"","stage":"","note":""}`;
+      try{
+        const res=await sample(prompt,{cache:false});
+        const m=(res.text||"").match(/\{[\s\S]*\}/);
+        if(!m) throw new Error("no json");
+        fillEntry(JSON.parse(m[0]), "Claude가 읽고");
+      }catch(e){
+        fillEntry(ruleParse(t), "Claude 정리에 실패해 단어 규칙으로 추정해");
+      }finally{ btn.disabled=false; }
+    } else {
+      fillEntry(ruleParse(t), "단어 규칙으로 추정해");
+    }
+  });
+  $("formEntry").addEventListener("submit",()=>{ $("ePaste").value=""; $("parseStatus").textContent=""; });
+
+  // ---------- Claude summary ----------
+  let lastSummary="";
+  function resetSummary(){ lastSummary=""; $("sumOut").textContent=""; show($("sumOut"),false); show($("btnCopy"),false); $("sumStatus").textContent= sample ? "" : $("sumStatus").textContent; }
+  $("btnSummary").addEventListener("click",async()=>{
+    const c=cases[selectedId]; if(!c||!sample) return;
+    const ents=sortedEntries(c);
+    if(ents.length===0){ $("sumStatus").textContent="연락 기록을 먼저 1개 이상 추가해 주세요."; return; }
+    const today=todayStr();
+    const lines=ents.map((en,i)=>`${i+1}. 날짜: ${en.date||"기록 없음"} | 상대: ${partyLabel(en)} | 단계: ${en.stage} | 내용: ${en.note}`).join("\n");
+    const prompt=
+`당신은 B2B 수출 회사 해외영업 신입을 돕는 도우미입니다. 아래는 선적 지연 건 하나의 연락 기록입니다.
+
+[지연 건 정보]
+- 이름: ${c.name}
+- 바이어: ${c.buyer||"기록 없음"}
+- 원래 선적일: ${c.origDate||"기록 없음"}
+- 새 예상 선적일: ${c.newDate||"기록 없음"}
+- 오늘 날짜: ${today}
+
+[연락 기록 (오래된 순)]
+${lines}
+
+[규칙]
+- 위 기록에 있는 내용만 쓰세요. 기록에 없는 날짜·숫자·이유·사람·회사는 절대 지어내지 말고 "기록 없음"이라고 쓰세요.
+- 한국어 존댓말, 쉬운 말로 쓰세요. 마크다운 기호(#, *, |)는 쓰지 마세요.
+
+[형식]
+1) 지금 상황 (한두 문장)
+2) 상대별 마지막 연락 (상대 - 날짜 - 단계 - 내용, 한 줄씩)
+3) 답을 기다리는 상대 (없으면 "없음")`;
+    const btn=$("btnSummary"); btn.disabled=true; $("sumStatus").textContent="Claude가 정리하는 중입니다…";
+    show($("sumOut"),true); $("sumOut").textContent=""; show($("btnCopy"),false);
+    try{
+      const res=await sample(prompt,{cache:false,onText:({text})=>{ $("sumOut").textContent=text; }});
+      lastSummary=res.text||""; $("sumOut").textContent=lastSummary;
+      $("sumStatus").textContent = res.truncated ? "답이 길어 일부가 잘렸습니다." : "";
+      show($("btnCopy"), !!lastSummary);
+    }catch(e){
+      const code=e&&e.code;
+      if(code==="not_granted"){ $("sumStatus").textContent="Claude 사용이 허용되지 않았습니다."; show($("sumOut"),false); }
+      else if(code==="rate_limited"){ $("sumStatus").textContent="요청이 많습니다. 잠시 뒤 다시 눌러 주세요."; }
+      else { $("sumStatus").textContent="요약을 받지 못했습니다. 잠시 뒤 다시 눌러 주세요."; }
+      if(e&&e.text){ $("sumOut").textContent=e.text; }
+    }finally{ btn.disabled=false; }
+  });
+  $("btnCopy").addEventListener("click",async()=>{
+    try{ await navigator.clipboard.writeText(lastSummary); $("sumStatus").textContent="복사했습니다."; }
+    catch(e){ $("sumStatus").textContent="복사하지 못했습니다. 요약 글을 직접 선택해 복사해 주세요."; }
+  });
+
+  // ---------- start ----------
+  $("eDate").value=todayStr();
+  render();
+  if(window.claude && typeof window.claude.use==="function"){ initStore(); initSample(); }
+  else { startLocal(); }
+})();
+</script>
+</body>
+</html>
